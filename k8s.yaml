@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: report-generator
+  template:
+    metadata:
+      labels:
+        app: report-generator
+    spec:
+      containers:
+        - name: report-generator
+          image: report-generator:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: report-generator-secret
+                  key: OPENAI_API_KEY
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: report-generator
+spec:
+  type: ClusterIP
+  selector:
+    app: report-generator
+  ports:
+    - port: 80
+      targetPort: 5000
