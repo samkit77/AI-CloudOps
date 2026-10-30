@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Report Generator</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f4f6fa; color: #182230; }
+    main { width: min(760px, calc(100% - 32px)); margin: 48px auto; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 5vw, 2.4rem); }
+    .subtitle { margin: 0; color: #536173; line-height: 1.5; }
+    .panel { background: #fff; border: 1px solid #dce2eb; border-radius: 14px; padding: 24px; box-shadow: 0 8px 24px rgb(27 39 56 / 5%); }
+    label { display: block; margin-bottom: 8px; font-weight: 650; }
+    input { width: 100%; padding: 12px 13px; border: 1px solid #bac5d4; border-radius: 8px; font: inherit; }
+    input:focus { outline: 3px solid #b9d5ff; border-color: #3478d4; }
+    button { margin-top: 14px; padding: 11px 16px; background: #1f5fbf; color: #fff; border: 0; border-radius: 8px; font: inherit; font-weight: 650; cursor: pointer; }
+    button:disabled { opacity: .65; cursor: wait; }
+    .message { margin: 14px 0 0; color: #9c2525; }
+    .result { margin-top: 22px; }
+    .result h2 { font-size: 1.25rem; margin: 0 0 12px; }
+    .report { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; }
+    .hidden { display: none; }
+    footer { margin-top: 18px; color: #667386; font-size: .88rem; text-align: center; }
+    @media (max-width: 520px) { main { margin: 24px auto; } .panel { padding: 18px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Report Generator</h1>
+      <p class="subtitle">Enter a topic and generate a clear report in seconds.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="form-heading">
+      <h2 id="form-heading" class="hidden">Generate a report</h2>
+      <form id="report-form">
+        <label for="topic">Report topic</label>
+        <input id="topic" name="topic" type="text" maxlength="200" placeholder="e.g. Benefits and risks of renewable energy" required>
+        <button id="generate-button" type="submit">Generate report</button>
+        <p id="message" class="message" role="alert" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="result" class="panel result hidden" aria-labelledby="result-heading">
+      <h2 id="result-heading">Generated report</h2>
+      <div id="report" class="report"></div>
+    </section>
+
+  </main>
+
+  <script>
+    const form = document.querySelector('#report-form');
+    const topicInput = document.querySelector('#topic');
+    const button = document.querySelector('#generate-button');
+    const message = document.querySelector('#message');
+    const result = document.querySelector('#result');
+    const reportOutput = document.querySelector('#report');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const topic = topicInput.value.trim();
+      message.textContent = '';
+      result.classList.add('hidden');
+
+      if (!topic) {
+        message.textContent = 'Enter a report topic.';
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = 'Generating…';
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to generate the report.');
+        }
+        reportOutput.textContent = data.report;
+        result.classList.remove('hidden');
+      } catch (error) {
+        message.textContent = error.message || 'Something went wrong. Please try again.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Generate report';
+      }
+    });
+  </script>
+</body>
+</html>
