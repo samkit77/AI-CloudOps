@@ -1,6 +1,6 @@
 # AI CloudOps | AWS, Kubernetes & GitOps
 
-An AI-powered application deployment project focused on containerization, AWS infrastructure, Kubernetes orchestration, and GitOps.
+An AI-powered application deployment project demonstrating modern DevOps practices using Docker, AWS, Kubernetes, and GitOps.
 
 ## Tech Stack
 
